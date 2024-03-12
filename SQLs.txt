@@ -1,0 +1,70 @@
+INVENTORY_MSTR.PRODUCT_LINE
+INVENTORY_MSTR.DESCRIPTION
+INVENTORY_MSTR.UM_INVENTORY
+INVENTORY_MSTR.FLAG_INACTIVE
+INVENTORY_MSTR.AMT_PRICE
+INVENTORY_MSTR.AMT_ALT_COST
+INVENTORY_MSTR.UM_PURCHASING
+INVENTORY_MSTR.TIME_MATERIAL_LEAD
+INVENTORY_MSTR.FLAG_LOT
+INVENTORY_MSTR.FLAG_SERIALIZE
+INVENTORY_MSTR.FACTOR_CONVERSION
+INVENTORY_MSTR.OBSOLETE_FLAG
+INVENOTRY_MSTR.CODE_SORT
+
+INVENTORY_MST2.CODE_SOURCE
+INVENTORY_MST2.DESCRIPTION_2
+INVENTORY_MST2.DESCRIPTION_3
+INVENTORY_MST2.NAME_VENDOR
+
+INVENTORY_MST3.CONSUMP_CONV
+
+
+UPDATE TABLES
+INV_CROSS_REF
+PART_XREF_USER
+
+select * from "INVENTORY_MSTR";
+
+Select
+Part,
+Location,
+Product_Line,
+Description,
+UM_Inventory,
+Flag_Inactive,
+Amt_Price,
+Amt_Alt_Cost,
+UM_Purchasing,
+Time_Material_Lead,
+Flag_Lot,
+Flag_Serialize,
+Factor_Conversion,
+Obsolete_Flag,
+Code_Sort
+From Inventory_Mstr
+Where Part = '0025' And Location <> '';
+Select Part,Location,Product_Line,Description,UM_Inventory,Flag_Inactive,Amt_Price,Amt_Alt_Cost,UM_Purchasing,Time_Material_Lead,Flag_Lot,Flag_Serialize,Factor_Conversion,Obsolete_Flag From Inventory_Mstr Where Part = '' And Location = '';
+
+Select
+Part,
+Location,
+Code_Source,
+Description_2,
+Description_3,
+Name_Vendor
+From Inventory_Mst2
+Where Part = '' And Location = '';
+Select Part,Location,Code_Source,Description_2,Description_3 From Inventory_Mst2 Where Part = '' And Location = '';
+
+Select 
+Part,
+Location,
+Consump_Conv
+From Inventory_Mst3
+Where Part = '' And Location = '';
+Select Part,Location,Consump_Conv From Inventory_Mst3 Where Part = '' And Location = '';
+
+Select * From Inv_Cross_Ref Where Part = '' And Location = '';
+
+Select * From Part_Xref_User Where Part = '' And Locn = '';
