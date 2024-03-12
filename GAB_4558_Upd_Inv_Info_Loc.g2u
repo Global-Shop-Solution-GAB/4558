@@ -1,0 +1,71 @@
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare
+	
+	V.Local.sSQL.Declare
+	V.Local.iRet.Declare
+	V.Local.iCnt.Declare
+
+	F.Intrinsic.Control.If(V.Caller.Hook,=,10185)
+		'Part::000007/Rev::000008/Loc::000009
+		F.ODBC.Connection!con.OpenCompanyConnection
+		'Check to see if the part has multiple locations
+		F.Intrinsic.String.Build("Select Part,Location From Inventory_Mstr Where Part = '{0}';",V.Passed.000007,V.Local.sSQL)
+		F.Data.DataTable.CreateFromSQL("dtInv","con",V.Local.sSQL,True)
+		F.Intrinsic.Control.If(V.DataTable.dtInv.RowCount,>,1)
+			F.Intrinsic.UI.Msgbox("Update information for matching parts in other locations?","Update?",4,V.Local.iRet)
+			F.Intrinsic.Control.If(V.Local.iRet,=,6)
+				'Pull Original Part Information (Inventory_Mstr,Inventory_Mst2,Inventory_Mst3)
+				F.Intrinsic.String.Build("Select Part,Location,Product_Line,Description,UM_Inventory,Flag_Inactive,Amt_Price,Amt_Alt_Cost,UM_Purchasing,Time_Material_Lead,Flag_Lot,Flag_Serialize,Factor_Conversion,Obsolete_Flag,Code_Sort From Inventory_Mstr Where Part = '{0}' And Location = '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtInvMstr1","con",V.Local.sSQL,True)
+				F.Intrinsic.String.Build("Select Part,Location,Code_Source,Description_2,Description_3,Name_Vendor From Inventory_Mst2 Where Part = '{0}' And Location = '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtInvMst21","con",V.Local.sSQL,True)
+				F.Intrinsic.String.Build("Select Part,Location,Consump_Conv From Inventory_Mst3 Where Part = '{0}' And Location = '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtInvMst31","con",V.Local.sSQL,True)
+				'Update other locations (Inventory_Mstr,Inventory_Mst2,Inventory_Mst3)
+				F.Intrinsic.String.Build("Select * From Inventory_Mstr Where Part = '{0}' And Location <> '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtInvMstr2","con",V.Local.sSQL,True)
+				F.Data.DataTable.SetValue("dtInvMstr2",-1,"Product_Line",V.DataTable.dtInvMstr1(0).Product_Line!FieldVal,"Description",V.DataTable.dtInvMstr1(0).Description!FieldVal,"UM_Inventory",V.DataTable.dtInvMstr1(0).UM_Inventory!FieldVal,"Flag_Inactive",V.DataTable.dtInvMstr1(0).Flag_Inactive!FieldVal,"Amt_Price",V.DataTable.dtInvMstr1(0).Amt_Price!FieldVal,"Amt_Alt_Cost",V.DataTable.dtInvMstr1(0).Amt_Alt_Cost!FieldVal,"UM_Purchasing",V.DataTable.dtInvMstr1(0).UM_Purchasing!FieldVal,"Time_Material_Lead",V.DataTable.dtInvMstr1(0).Time_Material_Lead!FieldVal,"Flag_Lot",V.DataTable.dtInvMstr1(0).Flag_Lot!FieldVal,"Flag_Serialize",V.DataTable.dtInvMstr1(0).Flag_Serialize!FieldVal,"Factor_Conversion",V.DataTable.dtInvMstr1(0).Factor_Conversion!FieldVal,"Obsolete_Flag",V.DataTable.dtInvMstr1(0).Obsolete_Flag!FieldVal,"Code_Sort",V.DataTable.dtInvMstr1(0).Code_Sort!FieldVal)
+				F.Intrinsic.String.Build("Select * From Inventory_Mst2 Where Part = '{0}' And Location <> '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtInvMst22","con",V.Local.sSQL,True)
+				F.Data.DataTable.SetValue("dtInvMst22",-1,"Code_Source",V.DataTable.dtInvMst21(0).Code_Source!FieldVal,"Description_2",V.DataTable.dtInvMst21(0).Description_2!FieldVal,"Description_3",V.DataTable.dtInvMst21(0).Description_3!FieldVal,"Name_Vendor",V.DataTable.dtInvMst21(0).Name_Vendor!FieldVal)
+				F.Intrinsic.String.Build("Select * From Inventory_Mst3 Where Part = '{0}' And Location <> '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtInvMst32","con",V.Local.sSQL,True)
+				F.Data.DataTable.SetValue("dtInvMst32",-1,"Consump_Conv",V.DataTable.dtInvMst31(0).Consump_Conv!FieldVal)
+				F.Data.DataTable.SaveToDB("dtInvMstr2","con","Inventory_Mstr","Part*!*Location")
+				F.Data.DataTable.SaveToDB("dtInvMst22","con","Inventory_Mst2","Part*!*Location")
+				F.Data.DataTable.SaveToDB("dtInvMst32","con","Inventory_Mst3","Part*!*Location")
+				'Pull Original Part Cross Ref Information (Inv_Cross_Ref,Part_Xref_User)
+				F.Intrinsic.String.Build("Select * From Inv_Cross_Ref Where Part = '{0}' And Location = '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtInvX1","con",V.Local.sSQL,True)
+				F.Intrinsic.String.Build("Select * From Part_Xref_User Where Part = '{0}' And Locn = '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.Data.DataTable.CreateFromSQL("dtPartX1","con",V.Local.sSQL,True)
+				F.Intrinsic.String.Build("Delete From Inv_Cross_Ref Where Part = '{0}' And Location <> '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.ODBC.Connection!con.Execute(V.Local.sSQL)
+				F.Intrinsic.String.Build("Delete From Part_Xref_User Where Part = '{0}' And Locn <> '{1}';",V.Passed.000007,V.Passed.000009,V.Local.sSQL)
+				F.ODBC.Connection!con.Execute(V.Local.sSQL)
+				'Update other locations Part Cross Ref Information (Inv_Cross_Ref,Part_Xref_User)
+				F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.dtInvMstr2.RowCount--,1)
+					F.Data.DataTable.SetValue("dtInvX1",-1,"Part",V.DataTable.dtInvMstr2(V.Local.iCnt).Part!FieldVal,"Location",V.DataTable.dtInvMstr2(V.Local.iCnt).Location!FieldVal)
+					F.Data.DataTable.SaveToDB("dtInvX1","con","Inv_Cross_Ref","Part*!*Location*!*Customer*!*Customer_Part*!*Vendor*!*Mfg_Part",256)
+					F.Data.DataTable.SetValue("dtPartX1",-1,"Part",V.DataTable.dtInvMstr2(V.Local.iCnt).Part!FieldVal,"Locn",V.DataTable.dtInvMstr2(V.Local.iCnt).Location!FieldVal)
+					F.Data.DataTable.SaveToDB("dtPartX1","con","Part_Xref_User","User_Part*!*Part*!*Locn*!*Cust*!*Cust_Part*!*Vendor*!*Mfg_Part",256)
+				F.Intrinsic.Control.Next(V.Local.iCnt)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: GAB_4558_Upd_Inv_Info_Loc.g2u{0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}.",V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$GAB_4558_Upd_Inv_Info_Loc$}$AGV$}$04/26/2017 3:13:30 PM$}$False
+Program.Sub.Comments.End
